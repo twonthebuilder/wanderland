@@ -1,118 +1,63 @@
-# Wanderland: The GeoJSON Land Finder
+# Wanderland: GeoJSON Land Explorer
 
-**Find land not for comfort — but for sovereignty.**\
-No realtors. No granite countertops. Just maps. This tool lets you explore land in Canada by stacking and filtering raw geographic data in real time.
+**Find land not for comfort, but for sovereignty.** Wanderland is an early, GeoJSON-first mapping prototype intended to help explore public geographic datasets. It is **not yet** a Canada-wide land suitability tool.
 
----
+## What works today
 
-## What It Does (In Plain English)
+- A static Leaflet map with OpenStreetMap background tiles.
+- Two committed New Brunswick datasets: `data/geojson/NBClaims.geojson` (mineral claim polygons) and `data/geojson/NBMinerals.geojson` (mineral occurrence points).
+- The map loads those two files by name, shows a checkbox for each successfully loaded layer, and fits the view to the combined data extent.
+- Missing or malformed datasets display an error in the layer controls instead of leaving a silently empty map.
 
-1. Uses **public GeoJSON datasets**: rivers, lakes, mineral deposits, tax zones, zoning maps—whatever you can find.
-2. Loads **all the GeoJSONs** and overlays them on a single interactive map of Canada.
-3. Users apply **filters** ("places near water," "exclude high-tax zones," etc.).
-4. The map updates in real time to display only the regions that match. That's it.
+**Not implemented:** automatic GeoJSON discovery, interactive attribute/spatial filtering, cross-layer queries, nationwide coverage, tax/water/zoning overlays, property suitability scoring, or export of filtered results. `src/filters/sampleFilters.js` contains only an always-true example; `applyFilters()` is a placeholder.
 
-No ETL pipelines. No fancy AI. Just clean maps, simple filters, and transparent data.
+## Run locally
 
----
+From the repository root:
 
-## Key Principles
-
-- **GeoJSON In, GeoJSON Out**: Every dataset is stored as a GeoJSON. The entire project runs on this single, universal format.
-- **Overlay-First UI**: The map *is* the interface. Filters change the visual layers.
-- **Real-Time Filtering**: Users interact with filters, not data files.
-- **No Data Cleaning at Runtime**: All data should be pre-cleaned into valid GeoJSONs before use.
-
----
-
-## Tech Stack
-
-| Area      | Tool                                        |
-| --------- | ------------------------------------------- |
-| Backend   | Python (optional for scoring)               |
-| Frontend  | Leaflet (vanilla JS)                        |
-| Data      | GeoJSON files (any source)                  |
-| Dev Tools | Prettier, ESLint, GitHub Actions (optional) |
-
----
-
-## How To Use (For Developers)
-
-### 1. Gather Datasets
-
-- Download any public GeoJSON datasets relevant to land selection (hydrography, minerals, taxes, etc.).
-- Save them into `/data/geojson/`.
-
-### 2. Run the App
-
-This project is a simple static website. From the repository root run:
-
-```bash
-python3 -m http.server
+```sh
+python3 -m http.server 8000
 ```
 
-Then open `http://localhost:8000/public/` in your browser. The app will load the GeoJSONs from `data/geojson/`.
+Open `http://localhost:8000/public/` in a browser. Do not open `public/index.html` directly as a `file://` URL: the app fetches local GeoJSON over HTTP.
 
-### 3. Add Filters (Optional)
+The page loads Leaflet from a public CDN and background tiles from OpenStreetMap, so those resources need network access. The two GeoJSON files themselves are served locally.
 
-- Each filter is just a simple rule in `src/filters/`. See `sampleFilters.js` for the pattern.
-- Filters can stack: multiple criteria can be combined.
+## Add another dataset
 
----
+1. Place a valid GeoJSON **FeatureCollection** in `data/geojson/`.
+2. Add its filename to the `geojsonFiles` array in `public/main.js`.
+3. Refresh the page and confirm the new layer checkbox appears. Inspect the browser console if an error appears.
 
-## Example Filters (Human-Readable)
+Files are explicitly listed, **not** discovered automatically. Layers currently show every feature without filtering. Keep data conversion and cleaning outside the browser; document source, license, geographic coverage, acquisition date, and update cadence before treating new layers as reliable evidence.
 
-- Near freshwater bodies
-- Specific minerals (gold, silver, etc)
-- Outside of mining claims
-- In low-tax zones
-- Inside firearm-friendly regions
+## Data reliability and scope
 
-All of these are driven by simple GeoJSON properties.
+The checked-in `NBClaims.geojson` and `NBMinerals.geojson` files are **historical snapshots**, not a verified live feed. The repository does not currently establish their original publisher, retrieval date, reuse terms, completeness, or update frequency. Some claim records contain 2019 timestamps, but those fields do not prove the overall dataset's publication date.
 
----
+A mapped mineral occurrence does not establish mineral rights, surface ownership, property availability, or legal access. Claim geometry may have changed since the snapshot. Verify anything relevant to land purchase or tenure with current authoritative provincial records and professional advice. This prototype is not legal, investment, or property advice.
 
-## Project Structure (Simplified)
+## Intended direction
+
+The longer-term concept is a simple, transparent, Canada-wide interface for stacking public geographic layers and applying composable, auditable filters, without unnecessary ETL pipelines or an opaque AI ranking system. Future filters may include distance to freshwater, mining-claim exclusion, zoning, and other attributes **once appropriate datasets and verified semantics exist**.
+
+The immediate next milestone is a small, tested filter UI that actually applies a user-selected predicate to a loaded FeatureCollection.
+
+## Structure
 
 ```text
-wanderland/
-├── data/
-│   └── geojson/       # All datasets live here (pre-converted to GeoJSON)
-├── src/
-│   └── filters/       # Filtering functions
-├── public/
-│   ├── index.html     # Interactive map
-│   ├── main.js        # Map logic
-│   └── style.css      # Basic layout
-└── README.md
+data/geojson/          # Committed example datasets
+src/filters/           # Example predicate; real filter UI is future work
+public/index.html      # Leaflet map page
+public/main.js         # Explicit dataset manifest and layer toggles
+public/style.css       # Map and layer-control layout
+docs/setup.md          # Quick start
 ```
-
----
-
-## MVP Goal
-
-- A simple map of Canada with the GeoJSONs displaying and filters working
-
----
 
 ## Contributing
 
-Want to help map freedom?
+Prefer small, modular changes and preserve GeoJSON inputs. See `AGENTS.md` for project conventions. If adding datasets, record provenance and license details before committing them.
 
-- Fork the repo
-- Stick to GeoJSONs
-- Submit small, modular pull requests
+## License
 
----
-
-## Disclaimer
-
-This is not legal, investment, or survival advice. It’s just a map. Validate everything independently.
-
----
-
-## Built By
-
-**Anthony**
-
-A Canadian who just wants to know where he can breathe free.
+See the repository's `LICENSE` file.
