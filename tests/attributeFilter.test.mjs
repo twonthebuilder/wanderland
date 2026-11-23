@@ -20,4 +20,15 @@ assert.equal(filterByAttribute(input, 'status', null).features.length, 1);
 assert.equal(filterByAttribute(input, 'missing', undefined).features.length, 0);
 assert.throws(() => filterByAttribute({}, 'status', 'active'), TypeError);
 assert.throws(() => filterByAttribute(input, '', 'active'), TypeError);
-console.log('attributeFilter: 7 assertions passed');
+const falsyInput = {
+  type: 'FeatureCollection',
+  features: [
+    { type: 'Feature', properties: { value: 0 }, geometry: null },
+    { type: 'Feature', properties: { value: false }, geometry: null },
+    { type: 'Feature', properties: { value: '' }, geometry: null }
+  ]
+};
+assert.equal(filterByAttribute(falsyInput, 'value', 0).features.length, 1);
+assert.equal(filterByAttribute(falsyInput, 'value', false).features.length, 1);
+assert.equal(filterByAttribute(falsyInput, 'value', '').features.length, 1);
+console.log('attributeFilter: 11 assertions passed');
